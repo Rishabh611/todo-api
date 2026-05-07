@@ -1,0 +1,40 @@
+package org.example.service;
+
+import org.example.dto.TodoRequest;
+import org.example.entity.Todo;
+import org.example.repository.TodoRepository;
+import org.example.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+
+@Service
+public class TodoService {
+    @Autowired
+    private TodoRepository todoRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    public Page<Todo> getTodos() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        Long userId = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"))
+                .getId();
+        return todoRepository.findByUserId(userId, PageRequest.of(0, 10, Sort.by("title")));
+    }
+
+    public void createTodo(TodoRequest todoRequest) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        var user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        Todo todo = new Todo();
+        todo.setTitle(todoRequest.getTitle());
+        todo.setDescription(todoRequest.getDescription());
+        todo.setUser(user);
+        todoRepository.save(todo);
+    }
+}

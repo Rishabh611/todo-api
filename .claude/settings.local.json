@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mvn spring-boot:run -q)",
+      "Bash(where mvn *)",
+      "Bash(where java *)"
+    ]
+  }
+}
