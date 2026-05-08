@@ -1,5 +1,6 @@
 package org.example.controller;
 
+import jakarta.validation.Valid;
 import org.example.dto.TodoRequest;
 import org.example.entity.Todo;
 import org.example.service.TodoService;
@@ -19,7 +20,17 @@ public class TodoController {
     }
 
     @PostMapping()
-    public void createTodo(@RequestBody TodoRequest request) {
-        todoService.createTodo(request);
+    public Todo createTodo(@RequestBody @Valid TodoRequest request) {
+        return todoService.createTodo(request);
+    }
+
+    @PatchMapping("/{id}")
+    public Todo updateTodo(@PathVariable Long id, @RequestBody @Valid TodoRequest request) {
+        return todoService.updateTodo(id, request);
+    }
+
+    @DeleteMapping("/{id}")
+    public void deleteTodo(@PathVariable Long id) {
+        todoService.deleteTodo(id);
     }
 }

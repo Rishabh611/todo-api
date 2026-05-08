@@ -1,7 +1,11 @@
 package org.example.dto;
 
+import jakarta.validation.constraints.NotBlank;
+
 public class TodoRequest {
+    @NotBlank
     private String title;
+    @NotBlank
     private String description;
 
     public String getTitle() {
