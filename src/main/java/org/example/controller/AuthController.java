@@ -3,6 +3,7 @@ package org.example.controller;
 import jakarta.validation.Valid;
 import org.example.dto.AuthResponse;
 import org.example.dto.LoginRequest;
+import org.example.dto.RefreshRequest;
 import org.example.dto.RegisterRequest;
 import org.example.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,5 +24,15 @@ public class AuthController {
     @PostMapping("/login")
     public AuthResponse login(@RequestBody @Valid LoginRequest request) {
         return authService.login(request);
+    }
+
+    @PostMapping("/refresh")
+    public AuthResponse refresh(@RequestBody @Valid RefreshRequest request) {
+        return authService.refresh(request);
+    }
+
+    @PostMapping("/logout")
+    public void logout(@RequestBody @Valid RefreshRequest request) {
+        authService.logout(request);
     }
 }

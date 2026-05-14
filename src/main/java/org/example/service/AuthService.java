@@ -2,7 +2,9 @@ package org.example.service;
 
 import org.example.dto.AuthResponse;
 import org.example.dto.LoginRequest;
+import org.example.dto.RefreshRequest;
 import org.example.dto.RegisterRequest;
+import org.example.entity.RefreshToken;
 import org.example.entity.User;
 import org.example.repository.UserRepository;
 import org.example.security.JwtService;
@@ -26,6 +28,9 @@ public class AuthService {
     @Autowired
     private JwtService jwtService;
 
+    @Autowired
+    private RefreshTokenService refreshTokenService;
+
     public void register(RegisterRequest request) {
         if(userRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("Email already in use");
@@ -44,9 +49,28 @@ public class AuthService {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
         );
-        String token = jwtService.generateToken(request.getEmail());
 
-        return new AuthResponse(token);
+        User user = userRepository.findByEmail(request.getEmail()).orElseThrow(() -> new RuntimeException("User not found"));
+        String token = jwtService.generateToken(request.getEmail());
+        RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
+
+        return new AuthResponse(token, refreshToken.getToken());
+    }
+
+    public AuthResponse refresh(RefreshRequest request) {
+        RefreshToken newRefreshToken = refreshTokenService.validateRefreshToken(request.getRefreshToken());
+
+        User user = newRefreshToken.getUser();
+
+        String newToken = jwtService.generateToken(user.getEmail());
+
+        return new AuthResponse(newToken, newRefreshToken.getToken());
+    }
+
+    public void logout(RefreshRequest request) {
+        RefreshToken newRefreshToken = refreshTokenService.validateRefreshToken(request.getRefreshToken());
+
+        refreshTokenService.deleteByUser(newRefreshToken.getUser());
     }
 
 }
