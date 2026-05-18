@@ -2,7 +2,9 @@ package org.example.service;
 
 import org.example.dto.LoginRequest;
 import org.example.dto.RegisterRequest;
+import org.example.entity.RefreshToken;
 import org.example.entity.User;
+import org.example.repository.RefreshTokenRepository;
 import org.example.repository.UserRepository;
 import org.example.security.JwtService;
 import org.junit.jupiter.api.Test;
@@ -14,6 +16,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -34,6 +38,9 @@ public class AuthServiceTest {
 
     @Mock
     private JwtService jwtService;
+
+    @Mock
+    private  RefreshTokenService refreshTokenService;
 
     @InjectMocks
     private AuthService authService;
@@ -83,6 +90,17 @@ public class AuthServiceTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("test@example.com");
         loginRequest.setPassword("password123");
+
+        User savedUser = new User();
+        savedUser.setRole("USER");
+        savedUser.setEmail("test@example.com");
+
+        RefreshToken refreshToken = new RefreshToken();
+        refreshToken.setUser(savedUser);
+        refreshToken.setToken("token");
+
+        when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(savedUser));
+        when(refreshTokenService.createRefreshToken(any())).thenReturn(refreshToken);
 
         when(jwtService.generateToken(loginRequest.getEmail())).thenReturn("TOKEN");
 
